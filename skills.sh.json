@@ -1,0 +1,11 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Nostr Authentication",
+      "description": "Sign in with Nostr (NIP-07) without a wallet, extension, or relay account.",
+      "skills": ["nostr-auth"]
+    }
+  ]
+}

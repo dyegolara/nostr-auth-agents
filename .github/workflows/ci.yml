@@ -1,0 +1,22 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm audit --omit=dev
+      - run: node --check skills/nostr-auth/scripts/nostr_auth.js
+      - run: node --check mcp/server.js
+      - name: Boot MCP server from clean checkout (no install)
+        run: |
+          printf '%s\n' \
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}' \
+            '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
+            | node mcp/server.js | grep -q '"name":"nostr_nip07_sign"'
+      - run: npm pack --dry-run
+      - run: npm test

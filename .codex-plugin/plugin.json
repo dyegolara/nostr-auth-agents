@@ -1,0 +1,10 @@
+{
+  "name": "nostr-auth",
+  "displayName": "Nostr Auth",
+  "version": "1.0.0",
+  "description": "Nostr sign-in (NIP-07) for LLM agents — sign sign-in challenge events, no wallet or extension required.",
+  "author": "dyegolara",
+  "homepage": "https://github.com/dyegolara/nostr-auth-agents",
+  "repository": "https://github.com/dyegolara/nostr-auth-agents",
+  "license": "MIT"
+}

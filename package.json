@@ -1,0 +1,49 @@
+{
+  "name": "nostr-auth",
+  "version": "1.0.0",
+  "description": "Nostr sign-in (NIP-07) signer for LLM coding agents — no wallet, no extension, auth-only",
+  "main": "nostr_auth.js",
+  "files": [
+    "nostr_auth.js",
+    "lib/",
+    "mcp/server.js",
+    "SKILL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "vitest run"
+  },
+  "keywords": [
+    "nostr",
+    "nostr-auth",
+    "nip-07",
+    "sign-in",
+    "signin",
+    "auth",
+    "login",
+    "secp256k1",
+    "schnorr",
+    "agents",
+    "openclaw-skill"
+  ],
+  "author": "dyegolara",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "homepage": "https://github.com/dyegolara/nostr-auth-agents",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dyegolara/nostr-auth-agents.git"
+  },
+  "type": "commonjs",
+  "dependencies": {},
+  "bin": {
+    "nostr-auth": "nostr_auth.js"
+  },
+  "devDependencies": {
+    "@noble/curves": "^1.9.7",
+    "vitest": "^4.1.10"
+  }
+}

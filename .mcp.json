@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "nostr-auth": {
+      "command": "node",
+      "args": ["mcp/server.js"]
+    }
+  }
+}

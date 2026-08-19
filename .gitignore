@@ -1,0 +1,8 @@
+# Zero runtime dependencies — the cryptography is pure Node.js stdlib
+# (node:crypto for sha256/HMAC + BigInt secp256k1/schnorr in lib/).
+# node_modules/ only ever contains dev dependencies (vitest, @noble/curves
+# for cross-checks), installed with `npm ci` for tests only.
+node_modules/
+.DS_Store
+*.log
+*.key
