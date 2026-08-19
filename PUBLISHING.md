@@ -68,33 +68,17 @@ los preflights de los canales afectados.
 | `npx skills@latest add . --list` | OK — descubre 1 skill: `nostr-auth` |
 | Vectores oficiales BIP-340 (vector 0) + cross-check `@noble/curves` | OK — en suite |
 | `gh auth` / creación del repo | OK — `dyegolara/nostr-auth-agents`, público |
+| Primer push + CI | OK — `main`, CI verde en el primer run, topics seteados |
 | `clawhub skill publish ... --dry-run` | PENDIENTE — preflight en acción manual (sección 11) |
 | `openclaw/agent-skills/scripts/validate-skills` | PENDIENTE — acción manual (sección 3) |
 | `claude plugin validate . --strict` | PENDIENTE — requiere instalación real de Claude Code (sección 6) |
 
 ## 1. GitHub (base de todo)
 
-**Estado**: LISTO parcialmente — el repo público existe y este commit es la
-base. Falta el primer push.
-
-Acción (única, una vez):
-
-```bash
-git push -u origin main
-gh repo edit dyegolara/nostr-auth-agents \
-  --description "Nostr sign-in (NIP-07) for LLM coding agents — no wallet, no extension, auth-only" \
-  --add-topic nostr --add-topic nip-07 --add-topic authentication \
-  --add-topic sign-in --add-topic agents --add-topic agent-skill --add-topic mcp
-```
-
-Después del push:
-
-```bash
-gh repo view dyegolara/nostr-auth-agents --web   # verificar topics/about/CI badge
-```
-
-CI queda activa sola (workflow en `.github/workflows/ci.yml`); verificar que
-el primer push la dispare en verde.
+**Estado**: LISTO — repo público `dyegolara/nostr-auth-agents`, default
+branch `main`, primer commit pusheado, topics (`nostr`, `nip-07`,
+`authentication`, `sign-in`, `agents`, `agent-skill`, `mcp`) y CI verde en el
+primer run. Revisar periódicamente que CI siga verde en cambios futuros.
 
 ## 2. README + descubribilidad
 
@@ -147,7 +131,7 @@ Fuentes consultadas:
 | `skills.sh.json` en la raíz | LISTO | `$schema`, `notGrouped`, `groupings` |
 | `groupings` con skill existente | LISTO | Grupo `Nostr Authentication` incluye `nostr-auth` |
 | Skill con `name` y `description` | LISTO | `npx skills@latest add . --list` lo descubre |
-| Repo público en GitHub | LISTO | `dyegolara/nostr-auth-agents` creado (push pendiente) |
+| Repo público en GitHub | LISTO | `dyegolara/nostr-auth-agents` pusheado en `main` |
 | Página remota actualizada | PENDIENTE EXTERNO | Requiere push + instalación/telemetría posterior |
 
 ### Acción manual (después del push)
@@ -325,8 +309,8 @@ Cada método nuevo NO reinicia el plan; lo re-valida:
 
 ### Siguientes pasos de publicación (en orden)
 
-- [ ] **Paso 1**: `git push -u origin main` + topics/description en GitHub.
-- [ ] **Paso 2**: verificar CI verde en el primer push.
+- [x] **Paso 1**: `git push -u origin main` + topics/description en GitHub.
+- [x] **Paso 2**: CI verde en el primer push (run 32295063969).
 - [ ] **Paso 3**: skills.sh: `npx skills add dyegolara/nostr-auth-agents ...`
       y verificar https://skills.sh/dyegolara/nostr-auth-agents.
 - [ ] **Paso 4**: `clawhub skill publish --dry-run --json` (preflight) y
