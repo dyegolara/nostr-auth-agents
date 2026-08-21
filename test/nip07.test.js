@@ -101,6 +101,24 @@ describe('nip07 flow', () => {
     expect(second.response.reason).toMatch(/already-used/);
   });
 
+  it('accepts an injectable transport for the callback POST', async () => {
+    let captured;
+    const transport = async (url, opts) => {
+      captured = { url, opts };
+      return { status: 200, body: JSON.stringify({ status: 'OK' }) };
+    };
+    const signed = signTemplate({
+      template: buildChallengeEvent({ challenge: 'injectable', relay: '' }),
+      domain: 'example.com',
+      key: 'ef'.repeat(32),
+    });
+    const verdict = await submitSignedEvent('http://example.invalid/verify', signed.event, { transport });
+    expect(verdict.ok).toBe(true);
+    expect(verdict.response.status).toBe('OK');
+    expect(captured.url).toBe('http://example.invalid/verify');
+    expect(captured.opts.body).toBe(JSON.stringify({ event: signed.event }));
+  });
+
   it('treats non-JSON callbacks as exit-code-4 errors', async () => {
     const badServer = http.createServer((req, res) => {
       res.writeHead(500, { 'Content-Type': 'text/plain' });

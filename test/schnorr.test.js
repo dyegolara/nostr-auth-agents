@@ -9,6 +9,13 @@ import {
   taggedHash,
   decompressPubkey,
 } from '../lib/schnorr';
+import {
+  sign as oracleSign,
+  verify as oracleVerify,
+  getPublicKey as oracleGetPublicKey,
+  liftX as oracleLiftX,
+  decompressPubkey as oracleDecompressPubkey,
+} from './oracle/schnorr-oracle';
 
 const hex = (s) => Buffer.from(s, 'hex');
 const hx = (b) => Buffer.from(b).toString('hex');
@@ -97,6 +104,36 @@ describe('schnorr BIP-340', () => {
     const compressed = Buffer.from(getPublicKey(priv).compressedHex, 'hex');
     const pt = decompressPubkey(compressed);
     expect(Buffer.from(pt.x.toString(16).padStart(64, '0'), 'hex')).toEqual(getPublicKey(priv).xBytes);
+  });
+
+  it('cross-checks the vendored implementation against the hand-written oracle', () => {
+    const privs = [
+      Buffer.from('ab'.repeat(32), 'hex'),
+      Buffer.from('0000000000000000000000000000000000000000000000000000000000000007', 'hex'),
+    ];
+    for (const priv of privs) {
+      const msg = Buffer.from(randomBytes(32));
+
+      const pub = getPublicKey(priv);
+      const oraclePub = oracleGetPublicKey(priv);
+      expect(hx(pub.xBytes)).toBe(hx(oraclePub.xBytes));
+      expect(pub.compressedHex).toBe(oraclePub.compressedHex);
+      expect(pub.evenY).toBe(oraclePub.evenY);
+
+      const sig = sign(msg, priv);
+      const oracleSig = oracleSign(msg, priv);
+      expect(hx(sig)).toBe(hx(oracleSig));
+      expect(oracleVerify(msg, sig, pub.xBytes)).toBe(true);
+      expect(verify(msg, oracleSig, pub.xBytes)).toBe(true);
+    }
+
+    const pt = liftX(BigInt('0x' + BIP340_VECTOR_0.pub));
+    const oraclePt = oracleLiftX(BigInt('0x' + BIP340_VECTOR_0.pub));
+    expect(pt.x).toBe(oraclePt.x);
+    expect(pt.y).toBe(oraclePt.y);
+
+    const compressed = Buffer.from('02' + BIP340_VECTOR_0.pub, 'hex');
+    expect(decompressPubkey(compressed).y).toBe(oracleDecompressPubkey(compressed).y);
   });
 
   it('rejects invalid private keys', () => {
