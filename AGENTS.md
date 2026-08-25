@@ -99,3 +99,17 @@ npm test
 Todo offline y sin costo. La suite cubre vectores BIP-340, derivación de
 llaves, sign/verify, rechazo de replay, dry-run, MCP y el artefacto de
 publicación.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as GitHub issues on `dyegolara/nostr-auth-agents`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage roles map to the labels `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` at the root plus `docs/adr/`. See `docs/agents/domain.md`.
