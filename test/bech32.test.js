@@ -31,4 +31,25 @@ describe('bech32', () => {
     expect(() => decode(corrupted, 32)).toThrow(/checksum/);
     expect(() => decode(encoded, 31)).toThrow(/Unexpected decoded length/);
   });
+
+  it('matches the official BIP-173 vectors (encode + decode)', () => {
+    const vectorBytes = Buffer.from('00443214c74254b635cf84653a56d7c675be77df', 'hex');
+    expect(encode('abcdef', vectorBytes)).toBe('abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw');
+
+    const valid = [
+      ['A12UEL5L', 'a', ''],
+      ['a12uel5l', 'a', ''],
+      ['abcdef1qpzry9x8gf2tvdw0s3jn54khce6mua7lmqqqxw', 'abcdef', '00443214c74254b635cf84653a56d7c675be77df'],
+    ];
+    for (const [str, prefix, hex] of valid) {
+      const d = decode(str);
+      expect(d.prefix).toBe(prefix);
+      expect(Buffer.from(d.bytes).toString('hex')).toBe(hex);
+    }
+
+    const invalid = ['pzry9x0s0muk', '1pzry9x0s0muk', 'x1b4n0q5v', 'li1dgmt3', 'A1G7SGD8', '10a06t8', '1qzzfhee'];
+    for (const str of invalid) {
+      expect(() => decode(str)).toThrow();
+    }
+  });
 });

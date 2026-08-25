@@ -1,0 +1,11 @@
+{
+  "id": "nostr-auth",
+  "name": "Nostr Auth",
+  "description": "Nostr sign-in (NIP-07) for LLM agents — sign sign-in challenge events, no wallet or extension required.",
+  "version": "1.0.0",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

@@ -1,0 +1,9 @@
+Vendored dependency (MIT), self-contained so the CLI, the MCP server and the
+portable bundle run without `npm install`:
+
+- `noble-secp256k1.cjs` — secp256k1 + BIP-340 schnorr from `@noble/curves`
+  v1.9.7 (Paul Miller), bundled to CommonJS with esbuild
+  (esbuild vendor-entry.mjs --bundle --format=cjs --platform=node
+  --target=node20). https://github.com/paulmillr/noble-curves — MIT
+
+License text: see the `LICENSE` file in the original package.

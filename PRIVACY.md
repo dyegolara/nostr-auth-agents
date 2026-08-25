@@ -1,34 +1,34 @@
-# Política de privacidad
+# Privacy policy
 
-Este proyecto no recopila datos. Todo el estado vive en la máquina donde se
-ejecuta:
+This project does not collect data. All state lives on the machine where it
+runs:
 
-- **Secreto maestro** (`~/.config/nostr-auth/master.key`, modo `0600`): lo
-  único persistido. Nunca se envía a nadie; solo se usan sus derivados
-  (llaves públicas y firmas).
-- **Derivación por dominio**: `HMAC-SHA256(maestro, dominio)` genera una
-  identidad distinta por servicio, de modo que servicios no relacionados no
-  pueden correlacionar al usuario.
+- **Master secret** (`~/.config/nostr-auth/master.key`, mode `0600`): the only
+  thing persisted. It is never sent to anyone; only its derivatives are used
+  (public keys and signatures).
+- **Per-service derivation**: `HMAC-SHA256(master, domain)` generates a
+  distinct identity per service, so unrelated services cannot correlate the
+  user.
 
-## Qué NO hace
+## What it does NOT do
 
-- No envía llaves privadas ni seeds a terceros.
-- No recolecta telemetría, analytics ni métricas.
-- No publica eventos a relays por su cuenta.
+- It does not send private keys or seeds to third parties.
+- It does not collect telemetry, analytics, or metrics.
+- It does not publish events to relays on its own.
 
-## Qué sí ocurre
+## What does happen
 
-- Un request HTTP al callback del servicio que se está autenticando, que
-  contiene la llave pública y una firma (equivalentes a lo que una extensión
-  NIP-07 expondría).
-- Si se usa `--key` o `--single-key`, la identidad enviada es la que se
-  especifique; no hay más transmisión que la indicada.
+- A single HTTP request to the callback of the service being authenticated,
+  containing the public key and a signature (equivalent to what a NIP-07
+  extension would expose).
+- When using `--key` or `--single-key`, the identity sent is the one you
+  specify; there is no transmission beyond that.
 
-## Limitación
+## Limitation
 
-### Identidad
+### Identity
 
-La llave derivada es una identidad de agente local. No es la identidad de una
-extensión de navegador o wallet del usuario (esas usan la nsec/seed del
-usuario). Reemplazar derivación por una nsec real (con `--key`) queda bajo
-responsabilidad de quien la configure.
+The derived key is a local agent identity. It is not the identity of the
+user's browser extension or wallet (those use the user's nsec/seed).
+Replacing derivation with a real nsec (via `--key`) is the responsibility of
+whoever configures it.
