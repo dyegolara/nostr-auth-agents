@@ -1,147 +1,148 @@
-# Publicación pendiente — `nostr-auth` (NIP-07)
+# Pending publication — `nostr-auth` (NIP-07)
 
-Actualizado: 2026-08-19
+Updated: 2026-08-19
 
-## Alcance
+## Scope
 
-Este documento es la hoja de ruta de publicación de `nostr-auth-agents`:
-separa lo que ya está preparado en el repositorio de las acciones externas
-que el mantenedor debe ejecutar manualmente, **paso a paso**, e ignora lo que
-deliberadamente no se publica. Durante este primer commit no se hizo ningún
-`publish`, login ni envío a marketplace.
+This document is the publishing roadmap for `nostr-auth-agents`: it separates
+what is already in place in the repository from the external actions the
+maintainer must run manually, **step by step**, and ignores what is
+deliberately not published. During this first commit no `publish`, login, or
+marketplace submission was performed.
 
-Estructura espejo del plan de `lnurl-auth-agents` (mismos canales, mismo
-criterio), con una diferencia: este proyecto arranca con **un solo método**
-(NIP-07, el más parecido a LNURL-auth) e irá sumando métodos en versiones
-sucesivas. La publishability se revisa y se re-verifica **poco a poco**: cada
-release pluggable en cada canal de abajo debe repetir su evidencia.
+Structure mirrors the `lnurl-auth-agents` plan (same channels, same criteria),
+with one difference: this project starts with **a single method** (NIP-07, the
+closest to LNURL-auth) and will add methods in successive versions.
+Publishability is reviewed and re-verified **little by little**: every
+pluggable release in each channel below must repeat its evidence.
 
-## Métodos soportados (roadmap de versiones)
+## Supported methods (version roadmap)
 
-| Método | Estado | Invocación | Versión objetivo |
+| Method | Status | Invocation | Target version |
 |---|---|---|---|
-| **NIP-07** sign-in (challenge event signing) | ✅ este commit | `nostr-auth nip07 [sign\|pubkey]` | 1.0.0 |
-| NIP-98 HTTP Auth (`Authorization: Nostr <event>`) | 🔜 siguiente | `nostr-auth nip98 <url>` | 1.1.0 |
+| **NIP-07** sign-in (challenge event signing) | ✅ this commit | `nostr-auth nip07 [sign\|pubkey]` | 1.0.0 |
+| NIP-98 HTTP Auth (`Authorization: Nostr <event>`) | 🔜 next | `nostr-auth nip98 <url>` | 1.1.0 |
 | NIP-42 relay AUTH (websocket) | 🔜 | `nostr-auth nip42 <relay>` | 1.2.0 |
 | NIP-05 identifier resolution | 🔜 | `nostr-auth nip05 <nip05>` | 1.3.0 |
 
-Cada método nuevo = subcomando nuevo en el mismo binario/bundle + bump de
-versión + re-ejecutar las evidencias de la sección "Evidencia ejecutada" y
-los preflights de los canales afectados.
+Each new method = a new subcommand in the same binary/bundle + a version bump
++ re-running the evidence in the "Evidence executed" section and the
+preflights of the affected channels.
 
-## Cambios realizados en este primer commit
+## Changes made in this first commit
 
-- `package.json` con `name: nostr-auth`, versión `1.0.0`, `files` restrictivo
-  (11 archivos), `engines.node >= 20.19.0` y **cero dependencias runtime**.
-- Criptografía pura en `lib/`: secp256k1 + BIP-340 schnorr en BigInt con
-  `node:crypto` solo para sha256/HMAC, NIP-01 eventos (serialize/id/sign),
-  derivación de identidad HMAC-SHA256 por dominio, y bech32 (npub/nsec).
-- `nostr_auth.js`: CLI con subcomandos por método (`nip07` hoy; `nip98`,
-  `nip42`, `nip05` "coming soon" — salida de error clara si se invocan).
-  Salidas/exit codes espejo de lnurl-auth: logs a stderr, JSON a stdout,
+- `package.json` with `name: nostr-auth`, version `1.0.0`, a restrictive
+  `files` list (11 files), `engines.node >= 20.19.0` and **zero runtime
+  dependencies**.
+- Pure cryptography in `lib/`: secp256k1 + BIP-340 schnorr in BigInt with
+  `node:crypto` only for sha256/HMAC, NIP-01 events (serialize/id/sign),
+  HMAC-SHA256 identity derivation per domain, and bech32 (npub/nsec).
+- `nostr_auth.js`: CLI with per-method subcommands (`nip07` today; `nip98`,
+  `nip42`, `nip05` "coming soon" — clear error output if invoked).
+  Output/exit codes mirror lnurl-auth: logs to stderr, JSON to stdout,
   `0/1/2/3/4`.
-- MCP cero dependencias: `mcp/server.js` stdio JSON-RPC 2.0 con tools
-  `nostr_nip07_sign` y `nostr_nip07_pubkey`. Arranca desde un clon limpio sin
-  `npm install` (la lib completa es stdlib).
-- `skills/nostr-auth/`: bundle autónomo OpenClaw/ClawHub con `SKILL.md` y
-  `scripts/nostr_auth.js` (helper portable en un solo archivo, cero deps).
-- `contrib/anthropics/skills/nostr-auth/SKILL.md`: variante educativa sin
-  scripts ejecutables para `anthropics/skills`.
+- Zero-dependency MCP: `mcp/server.js` stdio JSON-RPC 2.0 with tools
+  `nostr_nip07_sign` and `nostr_nip07_pubkey`. Boots from a clean clone with
+  no `npm install` (the whole library is stdlib).
+- `skills/nostr-auth/`: self-contained OpenClaw/ClawHub bundle with `SKILL.md`
+  and `scripts/nostr_auth.js` (single-file portable helper, zero deps).
+- `contrib/anthropics/skills/nostr-auth/SKILL.md`: educational variant with no
+  executable scripts for `anthropics/skills`.
 - Manifests: `.claude-plugin/`, `.codex-plugin/`, `.cursor-plugin/`,
-  `.mcp.json`, `skills.sh.json` (schema actual con `groupings`).
-- `mock_server.js`: servicio local "Sign in with Nostr" (challenge → verify)
-  para self-test sin red ni costo.
-- CI (GitHub Actions): sintaxis del bundle, boot del MCP desde checkout
-  limpio, `npm pack --dry-run` y suite completa.
-- Suite local: 8 archivos, 52 tests (vectores oficiales BIP-340 + cross-check
-  contra `@noble/curves` como devDependency).
+  `.mcp.json`, `skills.sh.json` (up-to-date schema with `groupings`).
+- `mock_server.js`: local "Sign in with Nostr" service (challenge → verify)
+  for network-free, cost-free self-testing.
+- CI (GitHub Actions): bundle syntax, MCP boot from a clean checkout,
+  `npm pack --dry-run` and the full suite.
+- Local suite: 8 files, 52 tests (official BIP-340 vectors + cross-check
+  against `@noble/curves` as a devDependency).
 
-## Evidencia ejecutada hoy
+## Evidence executed today
 
-| Verificación | Resultado |
+| Verification | Result |
 |---|---|
-| `npm install` (solo devDeps) | OK |
-| `npm audit --omit=dev` | OK — 0 vulnerabilidades runtime |
-| `npm test` | OK — 8 archivos, 52 tests |
-| `npm pack --dry-run --json` | OK — `nostr-auth@1.0.0`, 11 archivos intencionados, `bundled: []` |
-| `node --check` sobre CLI, MCP, bundle portable y `lib/` | OK |
-| `npx skills@latest add . --list` | OK — descubre 1 skill: `nostr-auth` |
-| Vectores oficiales BIP-340 (vector 0) + cross-check `@noble/curves` | OK — en suite |
-| `gh auth` / creación del repo | OK — `dyegolara/nostr-auth-agents`, público |
-| Primer push + CI | OK — `main`, CI verde en el primer run, topics seteados |
-| `clawhub skill publish ... --dry-run` | PENDIENTE — preflight en acción manual (sección 11) |
-| `openclaw/agent-skills/scripts/validate-skills` | PENDIENTE — acción manual (sección 3) |
-| `claude plugin validate . --strict` | PENDIENTE — requiere instalación real de Claude Code (sección 6) |
+| `npm install` (only devDeps) | OK |
+| `npm audit --omit=dev` | OK — 0 runtime vulnerabilities |
+| `npm test` | OK — 8 files, 52 tests |
+| `npm pack --dry-run --json` | OK — `nostr-auth@1.0.0`, 11 intended files, `bundled: []` |
+| `node --check` on CLI, MCP, portable bundle and `lib/` | OK |
+| `npx skills@latest add . --list` | OK — discovers 1 skill: `nostr-auth` |
+| Official BIP-340 vectors (vector 0) + `@noble/curves` cross-check | OK — in suite |
+| `gh auth` / repo creation | OK — `dyegolara/nostr-auth-agents`, public |
+| First push + CI | OK — `main`, CI green on the first run, topics set |
+| `clawhub skill publish ... --dry-run` | PENDING — preflight in manual action (section 11) |
+| `openclaw/agent-skills/scripts/validate-skills` | PENDING — manual action (section 3) |
+| `claude plugin validate . --strict` | PENDING — requires a real Claude Code install (section 6) |
 
-## 1. GitHub (base de todo)
+## 1. GitHub (base for everything)
 
-**Estado**: LISTO — repo público `dyegolara/nostr-auth-agents`, default
-branch `main`, primer commit pusheado, topics (`nostr`, `nip-07`,
-`authentication`, `sign-in`, `agents`, `agent-skill`, `mcp`) y CI verde en el
-primer run. Revisar periódicamente que CI siga verde en cambios futuros.
+**Status**: DONE — public repo `dyegolara/nostr-auth-agents`, default branch
+`main`, first commit pushed, topics (`nostr`, `nip-07`, `authentication`,
+`sign-in`, `agents`, `agent-skill`, `mcp`) and CI green on the first run.
+Periodically check that CI stays green on future changes.
 
-## 2. README + descubribilidad
+## 2. README + discoverability
 
-**Estado**: LISTO — README con badges de CI/MIT, instalación por plataforma,
-tabla de métodos con roadmap, self-test. Sin cambios extras por ahora; se
-revisará por canal cuando cada letrero (skills.sh, npm, ClawHub) quede
-publicado para añadir sus badges/links reales.
+**Status**: DONE — README with CI/MIT badges, per-platform installation, a
+methods table with roadmap, self-test. No extra changes for now; it will be
+reviewed per channel once each board (skills.sh, npm, ClawHub) is published to
+add its real badges/links.
 
 ## 3. `openclaw/agent-skills` (PR)
 
-Fuentes consultadas:
+Sources consulted:
 
 - Repo: https://github.com/openclaw/agent-skills
-- Reglas: https://github.com/openclaw/agent-skills/blob/main/README.md
-- Visión: https://github.com/openclaw/agent-skills/blob/main/VISION.md
-- Validador: https://github.com/openclaw/agent-skills/blob/main/scripts/validate-skills
+- Rules: https://github.com/openclaw/agent-skills/blob/main/README.md
+- Vision: https://github.com/openclaw/agent-skills/blob/main/VISION.md
+- Validator: https://github.com/openclaw/agent-skills/blob/main/scripts/validate-skills
 
-### Requisitos actuales y estado
+### Current requirements and status
 
-| Requisito | Estado | Evidencia en este proyecto |
+| Requirement | Status | Evidence in this project |
 |---|---|---|
-| `skills/<name>/SKILL.md` | LISTO | `skills/nostr-auth/SKILL.md` |
-| Frontmatter YAML con `name` y `description` | LISTO | `name: nostr-auth` + description válida |
-| Workflow portable y reutilizable | LISTO | Helper en un solo archivo, cero deps npm |
-| Inputs, outputs, fallos y límites explícitos | LISTO | Secciones del `SKILL.md` del bundle |
-| Licencia del proyecto MIT | LISTO | `LICENSE` en la raíz |
-| Helper en `scripts/` | LISTO | `skills/nostr-auth/scripts/nostr_auth.js` |
-| Encaje con `VISION.md` | LISTO | Protocolo genérico (NIPs), no atado a un producto |
-| `scripts/validate-skills` oficial | PENDIENTE | Ejecutar contra checkout temporal del repo oficial |
+| `skills/<name>/SKILL.md` | DONE | `skills/nostr-auth/SKILL.md` |
+| YAML frontmatter with `name` and `description` | DONE | `name: nostr-auth` + valid description |
+| Portable and reusable workflow | DONE | Single-file helper, zero npm deps |
+| Explicit inputs, outputs, failures and limits | DONE | Sections of the bundle `SKILL.md` |
+| MIT project license | DONE | `LICENSE` at the root |
+| Helper in `scripts/` | DONE | `skills/nostr-auth/scripts/nostr_auth.js` |
+| Fit with `VISION.md` | DONE | Generic protocol (NIPs), not tied to a product |
+| Official `scripts/validate-skills` | PENDING | Run against a temporary checkout of the official repo |
 
-### Acción manual
+### Manual action
 
-1. Clonar `openclaw/agent-skills` a un checkout temporal.
-2. Copiar `skills/nostr-auth/` desde este repo.
-3. Ejecutar `scripts/validate-skills` y las pruebas del repo destino.
-4. Abrir el PR y responder revisiones de encaje con `VISION.md`.
+1. Clone `openclaw/agent-skills` to a temporary checkout.
+2. Copy `skills/nostr-auth/` from this repo.
+3. Run `scripts/validate-skills` and the destination repo's tests.
+4. Open the PR and respond to fit reviews against `VISION.md`.
 
 ## 4. skills.sh (Vercel Agent Skills Directory)
 
-Fuentes consultadas:
+Sources consulted:
 
-- Documentación: https://skills.sh/docs
+- Documentation: https://skills.sh/docs
 - Schema: https://skills.sh/schemas/skills.sh.schema.json
 - CLI: https://github.com/vercel-labs/skills
 
-### Requisitos actuales y estado
+### Current requirements and status
 
-| Requisito | Estado | Evidencia |
+| Requirement | Status | Evidence |
 |---|---|---|
-| `skills.sh.json` en la raíz | LISTO | `$schema`, `notGrouped`, `groupings` |
-| `groupings` con skill existente | LISTO | Grupo `Nostr Authentication` incluye `nostr-auth` |
-| Skill con `name` y `description` | LISTO | `npx skills@latest add . --list` lo descubre |
-| Repo público en GitHub | LISTO | `dyegolara/nostr-auth-agents` pusheado en `main` |
-| Página remota actualizada | PENDIENTE EXTERNO | Requiere push + instalación/telemetría posterior |
+| `skills.sh.json` at the root | DONE | `$schema`, `notGrouped`, `groupings` |
+| `groupings` with existing skill | DONE | Group `Nostr Authentication` includes `nostr-auth` |
+| Skill with `name` and `description` | DONE | `npx skills@latest add . --list` discovers it |
+| Public GitHub repo | DONE | `dyegolara/nostr-auth-agents` pushed to `main` |
+| Remote page updated | PENDING EXTERNAL | Requires push + later install/telemetry |
 
-### Acción manual (después del push)
+### Manual action (after the push)
 
 ```bash
 npx skills add dyegolara/nostr-auth-agents --skill nostr-auth --list
 npx skills add dyegolara/nostr-auth-agents --skill nostr-auth
 ```
 
-Verificar la página tras la actualización de caché:
+Verify the page after the cache update:
 
 ```text
 https://skills.sh/dyegolara/nostr-auth-agents
@@ -149,80 +150,79 @@ https://skills.sh/dyegolara/nostr-auth-agents
 
 ## 5. `anthropics/skills` (PR)
 
-Fuente: https://github.com/anthropics/skills (formato Agent Skills,
+Source: https://github.com/anthropics/skills (Agent Skills format,
 https://agentskills.io).
 
-### Requisitos y estado
+### Requirements and status
 
-| Requisito | Estado | Evidencia |
+| Requirement | Status | Evidence |
 |---|---|---|
-| `skills/<name>/SKILL.md` | LISTO | `contrib/anthropics/skills/nostr-auth/SKILL.md` |
-| Frontmatter con `name` y `description` | LISTO | Verificado en suite de publishing |
-| Variante educativa sin scripts | LISTO | Solo markdown, sin `scripts/` ni MCP |
+| `skills/<name>/SKILL.md` | DONE | `contrib/anthropics/skills/nostr-auth/SKILL.md` |
+| Frontmatter with `name` and `description` | DONE | Verified in the publishing suite |
+| Educational variant with no scripts | DONE | Markdown only, no `scripts/` or MCP |
 
-### Acción manual
+### Manual action
 
-1. Fork/branch de `anthropics/skills`.
-2. Agregar `contrib/anthropics/skills/nostr-auth/SKILL.md` como
-   `skills/nostr-auth/SKILL.md` en el destino.
-3. PR describiendo el protocolo auth-only y sus límites.
+1. Fork/branch of `anthropics/skills`.
+2. Add `contrib/anthropics/skills/nostr-auth/SKILL.md` as
+   `skills/nostr-auth/SKILL.md` in the destination.
+3. PR describing the auth-only protocol and its limits.
 
 ## 6. Claude Community Marketplace
 
-Fuentes: https://code.claude.com/docs/en/plugins y
+Sources: https://code.claude.com/docs/en/plugins and
 https://platform.claude.com/plugins/submit.
 
-| Requisito | Estado | Evidencia |
+| Requirement | Status | Evidence |
 |---|---|---|
-| `.claude-plugin/plugin.json` | LISTO | Metadata, versión `1.0.0`, MIT, MCP server |
-| Skill compatible | LISTO | `SKILL.md` raíz (el MCP es el camino principal) |
-| `.mcp.json` | LISTO | Stdio `node mcp/server.js`, sin deps npm |
-| MCP funcional | LISTO | `test/mcp.test.js` + boot desde checkout limpio en CI |
-| Manifests Codex/Cursor | LISTO | `.codex-plugin/` y `.cursor-plugin/` |
-| `claude plugin validate . --strict` | EJECUTAR MANUALMENTE | Binario de Claude Code no instalado en este entorno |
+| `.claude-plugin/plugin.json` | DONE | Metadata, version `1.0.0`, MIT, MCP server |
+| Compatible skill | DONE | Root `SKILL.md` (MCP is the main path) |
+| `.mcp.json` | DONE | Stdio `node mcp/server.js`, no npm deps |
+| Working MCP | DONE | `test/mcp.test.js` + clean-checkout boot in CI |
+| Codex/Cursor manifests | DONE | `.codex-plugin/` and `.cursor-plugin/` |
+| `claude plugin validate . --strict` | RUN MANUALLY | Claude Code binary not installed in this environment |
 
-### Acción manual
+### Manual action
 
 ```bash
-claude plugin validate . --strict   # desde una instalación real de Claude Code
+claude plugin validate . --strict   # from a real Claude Code install
 ```
 
-Luego submit individual en https://platform.claude.com/plugins/submit (o ruta
-de directorio para team/enterprise). El catálogo community se sincroniza solo
-tras la aprobación.
+Then individual submit at https://platform.claude.com/plugins/submit (or the
+directory route for team/enterprise). The community catalog syncs on its own
+after approval.
 
 ## 7. Codex / Cursor / OpenCode (manifests)
 
-**Estado**: LISTO en el repo (`.codex-plugin/`, `.cursor-plugin/`,
-`.mcp.json`, `SKILL.md`). No hay portales de submit marcados pendientes: la
-distribución ocurre vía GitHub/npm para quienes instalen desde ahí. Se
-revisará si algún host agrega directorio oficial; no bloquea nada.
+**Status**: DONE in the repo (`.codex-plugin/`, `.cursor-plugin/`, `.mcp.json`,
+`SKILL.md`). No submit portals marked pending: distribution happens via
+GitHub/npm for those who install from there. It will be reviewed if some host
+adds an official directory; nothing is blocked.
 
-## 8. HuggingFace — descartado
+## 8. HuggingFace — rejected
 
-No aplica (ecosistema Hub/transformers/datasets; igual que en lnurl-auth).
+Not applicable (Hub/transformers/datasets ecosystem; same as lnurl-auth).
 
-## 9. NVIDIA/skills — descartado
+## 9. NVIDIA/skills — rejected
 
-Misma razón que lnurl-auth: gobernanza interna NVIDIA, licencias Apache/CC,
-DCO, IP review. Proyecto MIT, skill de propósito general, no de un producto
-NVIDIA.
+Same reason as lnurl-auth: NVIDIA internal governance, Apache/CC licenses,
+DCO, IP review. MIT project, general-purpose skill, not a NVIDIA product.
 
 ## 10. npm
 
-| Requisito | Estado | Evidencia |
+| Requirement | Status | Evidence |
 |---|---|---|
-| `name`, `version`, `description`, `license` | LISTO | `package.json` |
-| `repository` y `bin` | LISTO | `bin: {"nostr-auth": "nostr_auth.js"}` |
-| `files` restrictivo | LISTO | 6 entradas → 11 archivos en pack |
-| Shebang ejecutable | LISTO | `nostr_auth.js` mode `755` |
-| README y LICENSE incluidos | LISTO | Confirmados en `npm pack --dry-run` |
-| **Cero dependencias runtime** | LISTO | `dependencies: {}`, `bundled: []` |
-| Paquete construible | LISTO | `nostr-auth@1.0.0`, 11 archivos |
-| Nombre libre en registry | LISTO | `npm view nostr-auth` → 404 (aún no publicado) |
-| `npm login` / publish | PENDIENTE EXTERNO | No ejecutado |
+| `name`, `version`, `description`, `license` | DONE | `package.json` |
+| `repository` and `bin` | DONE | `bin: {"nostr-auth": "nostr_auth.js"}` |
+| Restrictive `files` | DONE | 6 entries → 11 files in pack |
+| Executable shebang | DONE | `nostr_auth.js` mode `755` |
+| README and LICENSE included | DONE | Confirmed in `npm pack --dry-run` |
+| **Zero runtime dependencies** | DONE | `dependencies: {}`, `bundled: []` |
+| Buildable package | DONE | `nostr-auth@1.0.0`, 11 files |
+| Name free in registry | DONE | `npm view nostr-auth` → 404 (not yet published) |
+| `npm login` / publish | PENDING EXTERNAL | Not run |
 
-### Acción manual
+### Manual action
 
 ```bash
 npm login
@@ -232,36 +232,36 @@ npm i -g nostr-auth@1.0.0
 nostr-auth nip07 pubkey --domain example.com
 ```
 
-Nota: el paquete excluye deliberadamente tests, CI, `PUBLISHING.md`,
-`AGENTS.md`, manifests de marketplaces y el bundle `skills/` (esos se
-distribuyen desde GitHub).
+Note: the package deliberately excludes tests, CI, `PUBLISHING.md`,
+`AGENTS.md`, marketplace manifests and the `skills/` bundle (those are
+distributed from GitHub).
 
 ## 11. ClawHub
 
-Fuentes: https://clawhub.ai · https://docs.openclaw.ai/clawhub/publishing
+Sources: https://clawhub.ai · https://docs.openclaw.ai/clawhub/publishing
 
-### Superficie elegida
+### Chosen surface
 
-Igual que lnurl-auth: publicación como **skill de ClawHub**, no como plugin
-nativo OpenClaw. `skills/nostr-auth/` contiene un `SKILL.md` + un helper
-regular (`scripts/`), `name` coincide con el directorio, declara `node` y la
-variable opcional `NOSTR_AUTH_KEYFILE`. Sin `openclaw.plugin.json` (evitar la
-detección a plugin nativo).
+Same as lnurl-auth: published as a **ClawHub skill**, not as a native OpenClaw
+plugin. `skills/nostr-auth/` contains a `SKILL.md` + a regular helper
+(`scripts/`), `name` matches the directory, declares `node` and the optional
+variable `NOSTR_AUTH_KEYFILE`. No `openclaw.plugin.json` (to avoid native
+plugin detection).
 
-### Requisitos y estado
+### Requirements and status
 
-| Requisito | Estado | Evidencia |
+| Requirement | Status | Evidence |
 |---|---|---|
-| Carpeta con `SKILL.md` | LISTO | `skills/nostr-auth/SKILL.md` |
-| `name` coincide con directorio | LISTO | Ambos `nostr-auth` |
-| Archivos de soporte regulares | LISTO | `scripts/nostr_auth.js` (un archivo) |
-| Metadata `requires.bins` / `envVars` | LISTO | `node` + `NOSTR_AUTH_KEYFILE` |
-| Bundle dentro de límites | LISTO | 2 archivos |
-| Preflight CLI `--dry-run --json` | PENDIENTE | Ejecutar y pegar salida en este doc |
-| Cuenta/login ClawHub | PENDIENTE EXTERNO | `clawhub login` no ejecutado |
-| Publicación y scan remoto | PENDIENTE EXTERNO | No se hizo upload |
+| Folder with `SKILL.md` | DONE | `skills/nostr-auth/SKILL.md` |
+| `name` matches directory | DONE | Both `nostr-auth` |
+| Regular support files | DONE | `scripts/nostr_auth.js` (single file) |
+| Metadata `requires.bins` / `envVars` | DONE | `node` + `NOSTR_AUTH_KEYFILE` |
+| Bundle within limits | DONE | 2 files |
+| CLI preflight `--dry-run --json` | PENDING | Run and paste output in this doc |
+| ClawHub account/login | PENDING EXTERNAL | `clawhub login` not run |
+| Publishing and remote scan | PENDING EXTERNAL | No upload made |
 
-### Preflight reproducible (acción manual, no publica nada)
+### Reproducible preflight (manual action, publishes nothing)
 
 ```bash
 npx --yes clawhub skill publish ./skills/nostr-auth \
@@ -273,8 +273,8 @@ npx --yes clawhub skill publish ./skills/nostr-auth \
   --dry-run --json
 ```
 
-Requisito para tachar esta fila: salida `would-publish`, versión `1.0.0`,
-2 archivos. Luego:
+Requirement to check this row off: `would-publish` output, version `1.0.0`,
+2 files. Then:
 
 ```bash
 npm i -g clawhub && clawhub login && clawhub whoami
@@ -284,47 +284,46 @@ clawhub skill publish ./skills/nostr-auth --slug nostr-auth \
 clawhub inspect @<publisher>/nostr-auth --files
 ```
 
-## 12. Roadmap de métodos → re-publicación
+## 12. Methods roadmap → re-publishing
 
-Cada método nuevo NO reinicia el plan; lo re-valida:
+Each new method does NOT restart the plan; it re-validates it:
 
-1. `nostr_nip98_*` (MCP) + subcomando `nip98` + tests (mock HTTP 401/header).
-2. `nip42` con websockets (posible dependencia dev `ws` solo en tests;
-   runtime seguirá zero-dep vía WebSocket global de Node ≥22).
+1. `nostr_nip98_*` (MCP) + `nip98` subcommand + tests (mock HTTP 401/header).
+2. `nip42` with websockets (possible dev dependency `ws` only in tests;
+   runtime stays zero-dep via the global WebSocket of Node ≥22).
 3. `nip05` resolve/verify.
-4. Por cada uno: bump de versión sincronizado (package, manifests, MCP,
-   SKILLs, bundle, `PUBLISHING.md`), re-ejecutar la tabla de evidencia y
-   re-publicar npm/ClawHub/skills.sh con la versión nueva.
+4. For each one: synchronized version bump (package, manifests, MCP, SKILLs,
+   bundle, `PUBLISHING.md`), re-run the evidence table and re-publish
+   npm/ClawHub/skills.sh with the new version.
 
-## Checklist final — paso a paso
+## Final checklist — step by step
 
-### Hecho en este primer commit
+### Done in this first commit
 
-- [x] Repo público `dyegolara/nostr-auth-agents` creado.
-- [x] CLI `nip07` funcional (sign/pubkey/challenge) + MCP + bundle portable.
-- [x] Cero dependencias runtime; MCP y bundle arrancan desde clon limpio.
-- [x] Suite de 52 tests incl. vectores BIP-340 y roundtrip contra mock local.
+- [x] Public repo `dyegolara/nostr-auth-agents` created.
+- [x] Functional `nip07` CLI (sign/pubkey/challenge) + MCP + portable bundle.
+- [x] Zero runtime dependencies; MCP and bundle boot from a clean clone.
+- [x] 52-test suite incl. BIP-340 vectors and roundtrip against a local mock.
 - [x] CI, README, AGENTS.md, PRIVACY, CONTRIBUTING, LICENSE (MIT).
-- [x] `npx skills@latest add . --list` descubre `nostr-auth`.
+- [x] `npx skills@latest add . --list` discovers `nostr-auth`.
 
-### Siguientes pasos de publicación (en orden)
+### Next publishing steps (in order)
 
-- [x] **Paso 1**: `git push -u origin main` + topics/description en GitHub.
-- [x] **Paso 2**: CI verde en el primer push (run 32295063969).
-- [ ] **Paso 3**: skills.sh: `npx skills add dyegolara/nostr-auth-agents ...`
-      y verificar https://skills.sh/dyegolara/nostr-auth-agents.
-- [ ] **Paso 4**: `clawhub skill publish --dry-run --json` (preflight) y
-      pegar la evidencia en la sección 11.
-- [ ] **Paso 5**: `npm login` + `npm publish` + `npm i -g nostr-auth`.
-- [ ] **Paso 6**: PR a `openclaw/agent-skills` (validar con
-      `scripts/validate-skills` primero).
-- [ ] **Paso 7**: PR a `anthropics/skills`.
-- [ ] **Paso 8**: `claude plugin validate . --strict` desde Claude Code
-      instalado + submit al marketplace community.
-- [ ] **Paso 9**: `clawhub login` + publish real + verificación con
+- [x] **Step 1**: `git push -u origin main` + topics/description on GitHub.
+- [x] **Step 2**: CI green on the first push (run 32295063969).
+- [ ] **Step 3**: skills.sh: `npx skills add dyegolara/nostr-auth-agents ...`
+      and verify https://skills.sh/dyegolara/nostr-auth-agents.
+- [ ] **Step 4**: `clawhub skill publish --dry-run --json` (preflight) and
+      paste the evidence in section 11.
+- [ ] **Step 5**: `npm login` + `npm publish` + `npm i -g nostr-auth`.
+- [ ] **Step 6**: PR to `openclaw/agent-skills` (validate with
+      `scripts/validate-skills` first).
+- [ ] **Step 7**: PR to `anthropics/skills`.
+- [ ] **Step 8**: `claude plugin validate . --strict` from an installed Claude
+      Code + submit to the community marketplace.
+- [ ] **Step 9**: `clawhub login` + real publish + verification with
       `clawhub inspect`.
-- [ ] **Después**: método `nip98` → bump 1.1.0 → repetir pasos 3-5 y 9.
+- [ ] **After**: `nip98` method → bump 1.1.0 → repeat steps 3-5 and 9.
 
-Cada paso se tacha aquí cuando su evidencia queda registrada. No se requiere
-ningún cambio adicional de código en este primer commit para ejecutar los
-pasos 1-5.
+Each step is checked off here when its evidence is recorded. No additional
+code changes are required in this first commit to run steps 1-5.

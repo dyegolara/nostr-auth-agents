@@ -1,92 +1,91 @@
-# AGENTS.md — nostr-auth para agentes de código
+# AGENTS.md — nostr-auth for coding agents
 
-## Qué hace esta herramienta
+## What this tool does
 
-`nostr_auth.js` firma eventos de "Sign in with Nostr" (estilo NIP-07) para
-agentes LLM. Recibe un challenge o un template de evento de un sitio/API,
-firma un evento kind-22242 con una llave secp256k1 (schnorr BIP-340) derivada
-de un secreto maestro local, y opcionalmente envía la firma al callback del
-servicio — sin wallet, sin extensión de navegador y sin publicar nada.
+`nostr_auth.js` signs "Sign in with Nostr" events (NIP-07 style) for LLM
+agents. It takes a challenge or an event template from a site/API, signs a
+kind-22242 event with a secp256k1 (BIP-340 schnorr) key derived from a local
+master secret, and optionally sends the signature to the service callback —
+no wallet, no browser extension, and nothing published.
 
-## Cuándo ejecutarla
+## When to run it
 
-Ejecuta esta herramienta cuando:
+Run this tool when:
 
-- Un sitio presenta "Sign in with Nostr" (o pide `window.nostr.signEvent`)
-- Una API entrega un `challenge` (string) o un template de evento para firmar
-- La tarea requiere probar identidad Nostr, **no** publicar notas ni pagar
+- A site presents "Sign in with Nostr" (or asks for `window.nostr.signEvent`)
+- An API hands back a `challenge` (string) or an event template to sign
+- The task requires proving a Nostr identity, **not** publishing notes or paying
 
-**NO ejecutar** para publicar kind-1, interactuar con relays para otra cosa
-que el callback, o mover fondos. Esto es solo autenticación.
+**Do NOT run** to publish kind-1, talk to relays for anything other than the
+callback, or move funds. This is authentication only.
 
-## Invocación rápida
+## Quick invocation
 
 ```bash
-node nostr_auth.js nip07 --challenge "<hex>" --domain <dominio> \
-  --callback "<url-de-verificacion>"
+node nostr_auth.js nip07 --challenge "<hex>" --domain <domain> \
+  --callback "<verification-url>"
 ```
 
-Variantes según el caso:
+Variants by case:
 
-| Caso | Comando |
+| Case | Command |
 |---|---|
-| Challenge string clásico (kind-22242) | `nip07 --challenge "<hex>" --relay "<url>" --callback "<url>"` |
-| Template de evento completo | `nip07 '{"kind":...,"tags":[...],"content":""}'` |
-| Ver la identidad derivada (getPublicKey) | `nip07 pubkey --domain <dominio>` |
-| Firmar sin enviar | añadir `--dry-run` |
+| Classic challenge string (kind-22242) | `nip07 --challenge "<hex>" --relay "<url>" --callback "<url>"` |
+| Full event template | `nip07 '{"kind":...,"tags":[...],"content":""}'` |
+| Inspect the derived identity (getPublicKey) | `nip07 pubkey --domain <domain>` |
+| Sign without submitting | add `--dry-run` |
 
-## Flujo recomendado
+## Recommended flow
 
-1. Obtener el challenge o template desde la página/API (atributo, QR, HTML,
-   respuesta JSON).
-2. **Dry-run primero**: `nostr_auth.js nip07 --challenge "<hex>" --dry-run --json`
-   para inspeccionar evento, pubkey y callback antes de enviar.
-3. Enviar: `--callback <url>`. Salida JSON con el veredicto del servidor.
+1. Obtain the challenge or template from the page/API (attribute, QR, HTML,
+   JSON response).
+2. **Dry-run first**: `nostr_auth.js nip07 --challenge "<hex>" --dry-run --json`
+   to inspect the event, pubkey and callback before submitting.
+3. Submit: `--callback <url>`. JSON output with the server verdict.
 
-Con `--json` la salida es parseable (jq). Los logs de progreso van a
-**stderr**.
+With `--json` the output is parseable (jq). Progress logs go to **stderr**.
 
-## Códigos de salida
+## Exit codes
 
-| Código | Significado |
+| Code | Meaning |
 |---|---|
-| `0` | Servidor respondió `{"status":"OK"}` o la operación completó |
-| `1` | Error del lado cliente (evento inválido, llave inválida, red) |
-| `2` | Error de uso (sin argumentos, opción desconocida) |
-| `3` | Servidor respondió `{"status":"ERROR","reason":"..."}` |
-| `4` | Respuesta no-200 o no-JSON del callback |
+| `0` | Server responded `{"status":"OK"}` or the operation completed |
+| `1` | Client-side error (invalid event, invalid key, network) |
+| `2` | Usage error (no arguments, unknown option) |
+| `3` | Server responded `{"status":"ERROR","reason":"..."}` |
+| `4` | Non-200 or non-JSON callback response |
 
-## Gestión de llaves
+## Key management
 
-- La primera ejecución genera un secreto maestro de 32 bytes en
-  `~/.config/nostr-auth/master.key` (modo `0600`).
-- Por dominio de servicio se deriva: `HMAC-SHA256(maestro, dominio)`.
-  Mismo dominio → misma identidad; dominios distintos → identidades distintas
-  (privacidad).
-- La identidad sobrevive entre sesiones; es persistente.
-- `--generate` **sobrescribe** el secreto maestro.
-- `--single-key` comparte una sola identidad entre todos los servicios.
-- `--key <hex>` usa esa llave como secreto maestro sin tocar el keyfile.
+- The first run generates a 32-byte master secret at
+  `~/.config/nostr-auth/master.key` (mode `0600`).
+- Per service domain it derives: `HMAC-SHA256(master, domain)`.
+  Same domain → same identity; different domains → different identities
+  (privacy).
+- The identity survives between sessions; it is persistent.
+- `--generate` **overwrites** the master secret.
+- `--single-key` shares one identity across all services.
+- `--key <hex>` uses that key as the master secret without touching the keyfile.
 
-## Problemas comunes
+## Common problems
 
-| Síntoma | Causa probable | Solución |
+| Symptom | Likely cause | Fix |
 |---|---|---|
-| `Invalid hex: odd length` | Challenge o llave mal formados | Re-extraer el challenge de la página |
-| `Event template must include "kind"` | Template sin `kind` | El template debe ser `{"kind":N,"tags":[...],"content":""}` |
-| `status: ERROR, reason: unknown or already-used challenge` | Challenge ya consumido | Pedir un challenge nuevo |
-| `status: ERROR, reason: signature verification failed` | Llave distinta o evento alterado | Mantener la llave estable por dominio |
-| `Callback returned non-JSON or HTTP <n>` | Callback caído o URL incorrecta | Verificar `--callback` |
-| `nonce is zero` | Material de llave degenerado | Regenerar con `--generate` |
+| `Invalid hex: odd length` | Malformed challenge or key | Re-extract the challenge from the page |
+| `Event template must include "kind"` | Template without `kind` | The template must be `{"kind":N,"tags":[...],"content":""}` |
+| `status: ERROR, reason: unknown or already-used challenge` | Challenge already consumed | Request a fresh challenge |
+| `status: ERROR, reason: signature verification failed` | Different key or altered event | Keep the key stable per domain |
+| `Callback returned non-JSON or HTTP <n>` | Callback down or wrong URL | Check `--callback` |
+| `nonce is zero` | Degenerate key material | Regenerate with `--generate` |
 
-## Métodos futuros (roadmap)
+## Future methods (roadmap)
 
-- `nip98` — NIP-98 HTTP Auth (`Authorization: Nostr <evento>`): planeado.
-- `nip42` — AUTH de relay por websocket: planeado.
-- `nip05` — Resolución/verificación de identificadores nip05: planeado.
+- `nip98` — NIP-98 HTTP Auth (`Authorization: Nostr <event>`): planned.
+- `nip42` — Relay AUTH over websocket: planned.
+- `nip05` — NIP-05 identifier resolution/verification: planned.
 
-Hoy se implementa `nip07` (el más parecido a lnurl-auth); los demás llegarán
-en versiones sucesivas. El estado de distribución por plataforma vive en
+Today `nip07` is implemented (the closest to lnurl-auth); the rest arrive in
+successive versions. Per-platform distribution status lives in
 `PUBLISHING.md`.
 
 ## Self-test
@@ -96,9 +95,8 @@ npm ci
 npm test
 ```
 
-Todo offline y sin costo. La suite cubre vectores BIP-340, derivación de
-llaves, sign/verify, rechazo de replay, dry-run, MCP y el artefacto de
-publicación.
+Fully offline and free. The suite covers BIP-340 vectors, key derivation,
+sign/verify, replay rejection, dry-run, MCP and the publishing artifact.
 
 ## Agent skills
 
