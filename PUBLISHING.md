@@ -70,9 +70,11 @@ preflights of the affected channels.
 | Official BIP-340 vectors (vector 0) + `@noble/curves` cross-check | OK — in suite |
 | `gh auth` / repo creation | OK — `dyegolara/nostr-auth-agents`, public |
 | First push + CI | OK — `main`, CI green on the first run, topics set |
-| `clawhub skill publish ... --dry-run` | PENDING — preflight in manual action (section 11) |
-| `openclaw/agent-skills/scripts/validate-skills` | PENDING — manual action (section 3) |
-| `claude plugin validate . --strict` | PENDING — requires a real Claude Code install (section 6) |
+| `clawhub skill publish ... --dry-run` | OK — `would-publish`, 2 files, fingerprint `49edc3fe…` (2026-09-04) |
+| `openclaw/agent-skills/scripts/validate-skills` | DISCARDED — PR rejected for lnurl-auth; this channel is ignored |
+| `claude plugin validate . --strict` | DISCARDED — marketplace rejected for lnurl-auth; this channel is ignored |
+| `clawhub skill publish` (real) | OK — uploaded, scan CLEAN, `pending.publication` (2026-09-04) |
+| `npm login` / publish | OK — `nostr-auth@1.0.0` on the registry (2026-09-04) |
 
 ## 1. GitHub (base for everything)
 
@@ -257,9 +259,9 @@ plugin detection).
 | Regular support files | DONE | `scripts/nostr_auth.js` (single file) |
 | Metadata `requires.bins` / `envVars` | DONE | `node` + `NOSTR_AUTH_KEYFILE` |
 | Bundle within limits | DONE | 2 files |
-| CLI preflight `--dry-run --json` | PENDING | Run and paste output in this doc |
-| ClawHub account/login | PENDING EXTERNAL | `clawhub login` not run |
-| Publishing and remote scan | PENDING EXTERNAL | No upload made |
+| CLI preflight `--dry-run --json` | DONE | `would-publish`, version `1.0.0`, 2 files (2026-09-04) |
+| ClawHub account/login | DONE | `clawhub whoami` → `dyegolara` |
+| Publishing and remote scan | DONE | Uploaded 2026-09-04; scan CLEAN (`pending.publication`, engine v2.4.26) |
 
 ### Reproducible preflight (manual action, publishes nothing)
 
@@ -311,18 +313,32 @@ Each new method does NOT restart the plan; it re-validates it:
 
 - [x] **Step 1**: `git push -u origin main` + topics/description on GitHub.
 - [x] **Step 2**: CI green on the first push (run 32295063969).
-- [ ] **Step 3**: skills.sh: `npx skills add dyegolara/nostr-auth-agents ...`
-      and verify https://skills.sh/dyegolara/nostr-auth-agents.
-- [ ] **Step 4**: `clawhub skill publish --dry-run --json` (preflight) and
-      paste the evidence in section 11.
-- [ ] **Step 5**: `npm login` + `npm publish` + `npm i -g nostr-auth`.
-- [ ] **Step 6**: PR to `openclaw/agent-skills` (validate with
-      `scripts/validate-skills` first).
-- [ ] **Step 7**: PR to `anthropics/skills`.
-- [ ] **Step 8**: `claude plugin validate . --strict` from an installed Claude
-      Code + submit to the community marketplace.
-- [ ] **Step 9**: `clawhub login` + real publish + verification with
-      `clawhub inspect`.
+- [x] **Step 3**: skills.sh: `npx skills add dyegolara/nostr-auth-agents
+      --skill nostr-auth --list` discovers 1 skill; real install OK
+      (copied to `.agents/skills/nostr-auth`).
+- [x] **Step 4**: `clawhub skill publish --dry-run --json` →
+      `would-publish`, version `1.0.0`, 2 files, fingerprint
+      `49edc3fe0be9…67c6a` (2026-09-04).
+- [x] **Step 5**: `npm publish` (`dyegolara` account, same as `lnurl-auth`)
+      → `nostr-auth@1.0.0` on the registry (2026-09-04 21:54 UTC).
+      Verified with `npm i -g nostr-auth` + smoke test
+      `nostr-auth nip07 pubkey --domain example.com` OK. Note: required
+      `--min-release-age=0` to install a freshly published package (local
+      `min-release-age=7` protection).
+- [x] **Step 9**: real `clawhub skill publish` → `nostr-auth@1.0.0`
+      uploaded; security scan CLEAN (`pending.publication`, engine
+      v2.4.26, 2026-09-04), becomes visible when moderation completes.
+
+### Steps 6-8 — discarded (maintainer decision, 2026-09-04)
+
+The PRs to `openclaw/agent-skills` and `anthropics/skills` and the
+Claude Community Marketplace submit were already attempted with
+`lnurl-auth` and rejected. They are ignored for this project too:
+
+- [~] **Step 6**: PR to `openclaw/agent-skills` — DISCARDED.
+- [~] **Step 7**: PR to `anthropics/skills` — DISCARDED.
+- [~] **Step 8**: `claude plugin validate` + community marketplace —
+      DISCARDED.
 - [ ] **After**: `nip98` method → bump 1.1.0 → repeat steps 3-5 and 9.
 
 Each step is checked off here when its evidence is recorded. No additional
